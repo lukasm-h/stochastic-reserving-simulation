@@ -5,8 +5,9 @@ library(ChainLadder)
 library(cli)
 
 ############### 0. Read parameter set and prepare simulation ##########
-name <- "[NAME OF PARAMETER SET]"
-parameter_set_path <- "[PATH OF PARAMETER SET]" #this expects the parameters in the format of the output of "Parameter_calibration.R"
+# Manually input the name for this parameter set and where to find it, for testing purposes the Taylor & Ashe (1983) triangle parameters are the default
+name <- "default_Taylor_Ashe_1983" # INPUT!
+parameter_set_path <- "Taylor_Ashe_1983_parameters.rds" #INPUT! This expects the parameters in the format of the output of "Parameter_calibration.R"
 
 sim_parameters <- readRDS(parameter_set_path)
 
