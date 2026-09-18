@@ -3,7 +3,7 @@ R code for the simulation and comparison of actuarial reserving practices for di
 
 This repository contains the R code used for the simulation study in my master's thesis on the comparison of stochastic reserving methods for different (correct/incorrect) model specifications. 
 
-Some parts of the simulation and scripts use function from the comprehensive ChainLadder R package (Gesmann et al., 2026). 
+Some parts of the simulation and scripts use functions from the comprehensive ChainLadder R package (Gesmann et al., 2026). 
 
 ## Simulation design
 
@@ -27,19 +27,24 @@ To achieve that, the following (replicable) process is followed:
 ## Repository structure
 
 - 'Simulation_Routine.R'
+	
 	Main simulation script. It is intended to be executed section by section, to give the opportunity to observe the process and check the diagnostics. Given a parameter set, the triangles for each generating model are simulated, for each triangle the fitting models are fitted and the differences of results are obtained and exported as CSV.  
 
 - 'Parameter_calibration.R'
+
 	Contains the calibration function. For a given 'prototypical' triangle, all the needed parameters for the simulation are obtained and saved. 
 
 - 'Functions.R'
+
 	All the analytical and Bootstrap-based functions used in the "Simulation_Routine.R"
 	This is the mathematical core of the simuation.
 
 - 'Export_Statistics.R'
+
 	Function for exporting the simulation results to CSV. 
 
 - 'Taylor_Ashe_1983_parameters.rds'
+
 	Parameters calibrated on the triangle from Taylor and Ashe (1983, 59-60), used as the standard parameter set for the simulation, enabling testing of the script without supplying own parameter set or calibration triangle. 
 
 ## Usage
@@ -49,13 +54,14 @@ Important prerequisite: The simulation is based on a 'prototypical' parameter se
 The main process is contained in 'Simulation_Routine.R'. It is intended to be executed section by section, to give the opportunity to observe the process and check the diagnostics. Please check the comments and (small) manual input required in that script. 
 Given a parameter set, the triangles for each generating model are simulated, for each triangle the fitting models are fitted and the differences of results are obtained and exported as CSV.
 
-Please note: The simulation can be computationally intensive, so you can adjust the number of generated triangles and used Bootstrap samples for the fitting process in section 0 of that script. 
+Please note: The simulation can be computationally intensive, so you can adjust the number of generated triangles and Bootstrap samples used for the fitting process in section 0 of that script. 
 
 ## R environment / required packages
 Used packages:
-	- ChainLadder
-	- readxl
-	- cli
+
+- ChainLadder
+- readxl
+- cli
 
 The dependencies are saved using 'renv', which can be used to restore the environment as well. 
 
@@ -65,3 +71,7 @@ Gesmann, M., Murphy, D., Zhang, Y., Carrato, A., Wüthrich, M., Concina, F., & D
 
 Taylor, G.C. & Ashe, F.R. 1983. Second moments of estimates of outstanding claims. *Journal of Econometrics 23*(1), 37–61. https://doi.org/10.1016/0304-4076(83)90074-X
 
+For a general introduction to the relevant models and methods, see e.g.
+
+Wüthrich, Mario V. & Merz, Michael. 2008. *Stochastic Claims Reserving Methods in
+Insurance*. John Wiley & Sons Ltd.
