@@ -12,6 +12,8 @@ export_statistics_to_csv <- function(comparison_data, name){
                              "msep_diff_rel_bs",
                              "msep_diff_ana", 
                              "msep_diff_rel_ana",
+                             "process_err_diff_rel_ana",
+                             "parameter_err_diff_rel_ana",
                              "q50_diff",
                              "q50_diff_rel",
                              "q65_diff",

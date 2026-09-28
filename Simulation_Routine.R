@@ -82,7 +82,7 @@ saveRDS(claims, file = paste0("claims_",name,"_simulations.rds")) ## WATCH OUT; 
 
 # Create array for the data that needs to be saved
 fitting_models <- c("true", "Mack", "ODP", "LN")
-statistics <- c("mean_bs", "mean_ana", "msep_bs", "msep_ana", "q50", "q65", "q80", "q95")
+statistics <- c("mean_bs", "mean_ana", "msep_bs", "msep_ana", "process_err_ana", "parameter_err_ana", "q50", "q65", "q80", "q95")
 
 full_results <- array(
   NA_real_,
@@ -295,6 +295,8 @@ for (gen_m in generating_models){
       # Save results
       full_results[gen_m, l, fit_m, "mean_ana"] <- ana_result$mean
       full_results[gen_m, l, fit_m, "msep_ana"] <- ana_result$msep
+      full_results[gen_m, l, fit_m, "process_err_ana"] <- ana_result$process_error
+      full_results[gen_m, l, fit_m, "parameter_err_ana"] <- ana_result$parameter_error
       full_results[gen_m, l, fit_m, "mean_bs"] <- bs_result$mean
       full_results[gen_m, l, fit_m, "msep_bs"] <- bs_result$sd
       full_results[gen_m, l, fit_m, "q50"] <- bs_result$q50
@@ -318,7 +320,7 @@ for (gen_m in generating_models){
 saveRDS(full_results, paste0("full_results_",name,".rds"))
 
 
-################## 3. Some error checks #########################
+################## 3. Some error checks (these can be skipped and just give some more understanding) #########################
 
   # 3.0.1 Check if there were many errors in Mack simulation
   mack_simulation_errors
@@ -434,30 +436,32 @@ saveRDS(full_results, paste0("full_results_",name,".rds"))
 
 
 # Define relevant quantities for comparison
-comparison_statistics <- c("mean_diff_bs", 
-                           "mean_diff_rel_bs", 
-                           "mean_diff_ana", 
-                           "mean_diff_rel_ana", 
-                           "msep_diff_bs", 
-                           "msep_diff_rel_bs",
-                           "msep_diff_ana", 
-                           "msep_diff_rel_ana",
-                           "q50_diff",
-                           "q50_diff_rel",
-                           "q65_diff",
-                           "q65_diff_rel",
-                           "q80_diff",
-                           "q80_diff_rel",
-                           "q95_diff",
-                           "q95_diff_rel",
-                           "q50_diff_rel_bs_norm",
-                           "q65_diff_rel_bs_norm",
-                           "q80_diff_rel_bs_norm",
-                           "q95_diff_rel_bs_norm",
-                           "q50_diff_rel_ana_norm",
-                           "q65_diff_rel_ana_norm",
-                           "q80_diff_rel_ana_norm",
-                           "q95_diff_rel_ana_norm")
+    comparison_statistics <- c("mean_diff_bs", 
+                               "mean_diff_rel_bs", 
+                               "mean_diff_ana", 
+                               "mean_diff_rel_ana", 
+                               "msep_diff_bs", 
+                               "msep_diff_rel_bs",
+                               "msep_diff_ana", 
+                               "msep_diff_rel_ana",
+                               "process_err_diff_rel_ana",
+                               "parameter_err_diff_rel_ana",
+                               "q50_diff",
+                               "q50_diff_rel",
+                               "q65_diff",
+                               "q65_diff_rel",
+                               "q80_diff",
+                               "q80_diff_rel",
+                               "q95_diff",
+                               "q95_diff_rel",
+                               "q50_diff_rel_bs_norm",
+                               "q65_diff_rel_bs_norm",
+                               "q80_diff_rel_bs_norm",
+                               "q95_diff_rel_bs_norm",
+                               "q50_diff_rel_ana_norm",
+                               "q65_diff_rel_ana_norm",
+                               "q80_diff_rel_ana_norm",
+                               "q95_diff_rel_ana_norm")
 
 # Define comparison types: observed diffs or regular diffs
 comparison_types <- c("absolute", "regular")
@@ -506,6 +510,9 @@ for (gen_m in generating_models){
           comparison_array[gen_m, fit_m1, fit_m2, "msep_diff_rel_bs", moment, comp] <- toggle_comp(full_results[gen_m, , fit_m1, "msep_bs"]/full_results[gen_m, , fit_m2, "msep_bs"] - 1 , comp, moment)
           comparison_array[gen_m, fit_m1, fit_m2, "msep_diff_ana", moment, comp] <- toggle_comp(full_results[gen_m, , fit_m1, "msep_ana"]-full_results[gen_m, , fit_m2, "msep_ana"], comp, moment)
           comparison_array[gen_m, fit_m1, fit_m2, "msep_diff_rel_ana", moment, comp] <- toggle_comp(full_results[gen_m, , fit_m1, "msep_ana"]/full_results[gen_m, , fit_m2, "msep_ana"] - 1 , comp, moment)
+          
+          comparison_array[gen_m, fit_m1, fit_m2, "process_err_diff_rel_ana", moment, comp] <- toggle_comp(full_results[gen_m, , fit_m1, "process_err_ana"]/full_results[gen_m, , fit_m2, "process_err_ana"] - 1 , comp, moment)
+          comparison_array[gen_m, fit_m1, fit_m2, "parameter_err_diff_rel_ana", moment, comp] <- toggle_comp(full_results[gen_m, , fit_m1, "parameter_err_ana"]/full_results[gen_m, , fit_m2, "parameter_err_ana"] - 1 , comp, moment)
           
           # Calculate empirical Quantile diffs
           comparison_array[gen_m, fit_m1, fit_m2, "q50_diff", moment, comp] <- toggle_comp(full_results[gen_m, , fit_m1, "q50"]-full_results[gen_m, , fit_m2, "q50"], comp, moment)

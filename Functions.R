@@ -21,13 +21,22 @@ toggle_comp <- function(x, a, stat){
 
 # Integrate Finney-Function (1941, bias correction for LN fitting)
 g_k <- function(t,k){
-  value = 0
- n <- 0:9
+  
+  for (N in 1:10000){
+  n <- 0:N
  
- product_terms <- cumprod(k+ 2*n)
- summands <- ((k^(2*n) * (k + 2*n)) / ((k+1)^n * product_terms)) * (t^n / factorial(n))
- 
- sum(summands)
+   product_terms <- cumprod(k+ 2*n)
+   summands <- ((k^(2*n) * (k + 2*n)) / ((k+1)^n * product_terms)) * (t^n / factorial(n))
+   
+   value <- sum(summands)
+   
+   # Stop if no more movement in sum
+    if(abs(summands[N+1]) <= 1e-12*abs(value)){
+      return(value)
+    }
+  }
+  
+  stop("Finney-Correction did not converged within 10000 terms, check data!")
 }
 
 
@@ -49,14 +58,10 @@ analytical_result <- function(triangle, model = c("Mack", "ODP", "LN")){
     ODP = {
       inc <- cum2incr(as.triangle(triangle))
       
-      # Count where the fallback is needed
+      # Count where the fallback is needed (always use fallback function because it is equivalent and shows distinction of process and parameter error)
       fallback_columns <- which(colSums(inc < 0, na.rm = TRUE) > 0)
       
-      if(length(fallback_columns) > 0) {
-       # message("ODP fallback was used.")
-        result <- analytic_odp_fallback(triangle)
-      } else {
-        result <- analytic_odp(triangle)}
+      result <- analytic_odp_fallback(triangle)
       result$fallback_columns <- fallback_columns
       result
       },
@@ -169,7 +174,9 @@ analytic_mack <- function(triangle){
     return(
       list(
         mean = NA_real_,
-        msep = NA_real_
+        msep = NA_real_,
+        process_error = NA_real_,
+        parameter_error = NA_real_
       )
     )
   }
@@ -178,7 +185,9 @@ analytic_mack <- function(triangle){
   
   list(
     mean = sum(summary(mack_model)$ByOrigin$IBNR),
-    msep = mack_model$Total.Mack.S.E
+    msep = mack_model$Total.Mack.S.E,
+    process_error = tail(mack_model$Total.ProcessRisk, 1),
+    parameter_error = tail(mack_model$Total.ParameterRisk, 1)
   )
 }
 
@@ -253,7 +262,7 @@ analytic_odp_fallback <- function(triangle){
   data_past <- data[!is.na(data$value),]
   data_future <- data[is.na(data$value),]
   
-  # Check if system of equations is actually solvable (so quasi-score working?)
+  # Check neccessary condition of solvability of system of equations (so quasi-score working)
   bad_rows <- which(tapply(data_past$value, data_past$origin, sum) <= 0)
   bad_columns <- which(tapply(data_past$value, data_past$dev, sum) <= 0)
   
@@ -266,6 +275,8 @@ analytic_odp_fallback <- function(triangle){
       list(
         mean = NA_real_,
         msep = NA_real_,
+        process_error = NA_real_,
+        parameter_error = NA_real_,
         failed = bad_columns
       )
     )
@@ -300,6 +311,10 @@ analytic_odp_fallback <- function(triangle){
     data = data_past
   )
   
+  if (!fit$converged) {
+    stop("Unusual error: Quasi-ODP not fitted since it did not converge. Check data.")
+  }
+  
   # Get future values
   future_increments <- predict(fit, newdata = data_future, type = "response")
   future_linked_values <- predict(fit, newdata = data_future, type = "link")
@@ -331,6 +346,8 @@ analytic_odp_fallback <- function(triangle){
   list(
     mean = mean_reserve,
     msep = msep,
+    process_error = sqrt(msep_process_error),
+    parameter_error = sqrt(msep_estimation_error),
     failed = integer(0)
   )
 }
@@ -450,7 +467,9 @@ analytic_ln <- function(triangle){
   # Return
   list(
     mean = sum(ultimate_values - diagonal),
-    msep = sqrt(msep2)
+    msep = sqrt(msep2),
+    process_error = sqrt(sum(diagonal[2:N]^2 * (cumprod(rev(theta_hat_2)) - cumprod(rev(theta_2_tilde))))),
+    parameter_error = sqrt(sum(diagonal[2:N]^2 *(- cumprod(rev(theta_2_tilde)) + cumprod(rev(theta_hat^2)))) +2*mixed_sum)
   )
 }
 
